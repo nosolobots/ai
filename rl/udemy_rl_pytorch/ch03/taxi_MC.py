@@ -51,7 +51,7 @@ def gen_episode(e):
     return episode
 
 
-ITERATIONS = 10000
+ITERATIONS = 5000
 GAMMA = .95
 
 e = gym.make("Taxi-v3")

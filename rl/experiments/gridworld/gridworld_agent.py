@@ -4,7 +4,6 @@ from gym import wrappers
 import gym_gridworld
 import matplotlib.pyplot as plt
 import time
-from gym import error, logger
 
 ITERATIONS = 10
 GAMMA = .9
