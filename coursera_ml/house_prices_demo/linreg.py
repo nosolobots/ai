@@ -34,9 +34,9 @@ def norm_v(v, t='m'):
     Returns:
         The normalized vector
     """
-    if   t == 'm':  
+    if   t == 'm':
         return (v - v.mean())/(v.max() - v.min())
-    elif t == 's':  
+    elif t == 's':
         return (v - v.mean())/v.std()
 
 def norm_m(X, cols, t='m'):
@@ -47,7 +47,7 @@ def norm_m(X, cols, t='m'):
         cols: list of columns to normalize
         type: 'm' = mean normalization | 's' = std deviation normalization
     """
-    for c in cols: 
+    for c in cols:
         X[:,c] = norm_v(X[:,c], t)
 
 def hypothesis(theta, X):
@@ -59,8 +59,8 @@ def hypothesis(theta, X):
 
     Returns:
         m-vector with the calculated hypothesis for every sample
-    """ 
-    return X@theta        
+    """
+    return X@theta
 
 def cost(theta, X, y):
     """Calculate the cost function.
@@ -77,13 +77,13 @@ def cost(theta, X, y):
 
     # alternative method 1
     #return (1/(2*m))*((X@theta - y)**2).sum()
-    
+
     # alternative method 2
     return (1/(2*m))*np.transpose(X@theta - y)@(X@theta - y)
 
 def gradient(theta, X, y, alpha):
     """calculate the gradient for the cost function.
-    
+
     Args:
         theta: n-vector of theta parameters
         X: (m x n) matrix of m-samples x n-features.
@@ -125,7 +125,7 @@ def normal_eq(X, y):
     Returns:
         the calculated theta parameters n-vector
     """
-    return np.linalg.pinv(X.T@X)@X.T@y    
+    return np.linalg.pinv(X.T@X)@X.T@y
 
 
 

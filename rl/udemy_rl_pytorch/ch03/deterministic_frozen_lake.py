@@ -2,13 +2,13 @@ import torch
 import numpy as np
 import gym
 import time
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
 
 def clear_scr():
     print(chr(0x1B) + "[2J")
     print(chr(0x1B) + "[H")
 
-EPISODES = 1000
+EPISODES = 300
 
 num_states = 16
 num_actions = 4
@@ -35,6 +35,9 @@ for n in range(EPISODES):
         new_state, reward, done, info  = env.step(action)
         steps += 1
 
+        #if done and not reward: reward = -0.25 # negative reward if fall
+        #if not done and state==new_state: reward = -0.1 # neg reward if wall
+
         # update Q values
         q_values[state, action] = reward + gamma*torch.max(q_values[new_state])
 
@@ -43,9 +46,10 @@ for n in range(EPISODES):
         #clear_scr()
         #env.render()
         #print(steps)
-        #time.sleep(1)
+        #print(q_values)
+        #time.sleep(.5)
 
-        if done: 
+        if done:
             total_steps.append(steps)
             rewards.append(reward)
             break
