@@ -1,8 +1,14 @@
-"""Resolución de FrozenLake mediante algoritmo Value Iteration (DP)."""
+"""
+    Resolución de FrozenLake mediante algoritmo Value Iteration (DP).
+    
+    Realiza una estimación del modelo (recompensas y probabilidades de transición).
+"""
 
 import gym
 import numpy as np
 from time import sleep
+
+from collections import defaultdict, Counter
 
 from torch.utils.tensorboard import SummaryWriter
 
@@ -17,11 +23,28 @@ class Agent():
 
         # inicializamos el Valor de los estados
         self.V = np.zeros(env.observation_space.n)
-
+        
+        # inicializa la estructura para la estimación de las recompensas y transiciones
+        self.state = self.env.reset()
+        self.rewards = defaultdict(float) # diccionario para las recompensas. K=(s,a,s'), V=float
+        self.transits = defaultdict(Counter) # diccionario de transiciones. K=(s,a), V=Counter(K=(s'), V=int)
+        
     def calc_action_value(self, state, action):
-        """Aplicamos Bellman para calcular Q(s,a)."""
-        return sum([p*(r + self.GAMMA*self.V[s_])
-                    for p, s_, r, _ in self.env.P[state][action]])
+        """
+            Aplicamos Bellman para calcular Q(s,a).
+            
+            Ahora no conocemos la tabla de transiciones P. Debemos usar los datos de las estimaciones
+        """
+        target_counts = self.transits[(state, action)]
+        total = sum(target_counts.values())
+        action_value = .0
+        
+        for s_next, count in target_counts.items():
+            r = self.rewards[(state, action, s_next)]
+            p = count/total
+            action_value += p*(r + self.GAMMA * self.V[s_next])
+            
+        return action_value
 
     def select_action(self, state):
         """Selecciona la acción que maximiza Q(s,a) para el estado actual."""
@@ -29,7 +52,11 @@ class Agent():
                           for a_ in range(self.env.action_space.n)])
 
     def value_iteration(self):
-        """Actualiza el valor de los estados."""
+        """
+            Actualiza el valor de los estados.
+            Antes, necesita realizar una serie de iteraciones para obtener información del entorno.            
+        """
+        self.play_n_random_steps(1000)
         for s_ in range(self.env.observation_space.n):
             self.V[s_] = max([self.calc_action_value(s_, a_)
                              for a_ in range(self.env.action_space.n)])
@@ -41,6 +68,16 @@ class Agent():
             policy[s] = np.argmax([self.calc_action_value(s, a_)
                                    for a_ in range(self.env.action_space.n)])
         return policy
+
+    def play_n_random_steps(self, n):
+        """Realiza n interacciones con el entorno para obtener información del mismo."""
+        for _ in range(n):
+            action = self.env.action_space.sample()
+            new_state, reward, is_done, _ = self.env.step(action)
+            self.rewards[self.state, action, new_state] = reward
+            self.transits[self.state, action][new_state] += 1
+            self.state = self.env.reset() if is_done else new_state
+        
 
 def process_iteration(agent, n, show=False, pause=.0):
     """Lanza una iteración de N episodios y devuelve la recompesa media."""
@@ -67,6 +104,8 @@ def process_iteration(agent, n, show=False, pause=.0):
 
     return it_rwd/n
 
+
+
 def main():
     # entorno
     env = gym.make("FrozenLake-v0", map_name="8x8")
@@ -78,7 +117,7 @@ def main():
     # ENTRENAMIENTO
 
     # Tensorbaord record file init
-    writer = SummaryWriter("runs/working_directory/x8P")
+    writer = SummaryWriter("runs/working_directory/x8E")
 
     it = 0
     best_rwd = 0.0
