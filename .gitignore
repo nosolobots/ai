@@ -2,3 +2,5 @@
 *.swp
 .ipynb_checkpoints/
 rec*/
+.idea/
+.spyproject/
