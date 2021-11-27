@@ -1,0 +1,9 @@
+Flask
+Jinja2
+numpy
+openai
+pandas
+pandas-stubs
+python-dotenv
+pytz
+requests

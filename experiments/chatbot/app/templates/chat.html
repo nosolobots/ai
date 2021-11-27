@@ -1,0 +1,31 @@
+
+<!DOCTYPE html>
+
+<head>
+  <script>
+    function scroll_textarea() {
+      t = document.getElementById("texta");
+      t.focus();
+      t.value = t.value.trim() + ' ';
+      t.scrollTop = t.scrollHeight;
+    }
+  </script>
+</head>
+
+<body onload="scroll_textarea()">
+  <div id="main">
+    <div id="header">
+        <h1>GPT-3 Chatbot</h1>
+		</div>
+    <div id="content">
+      <form action="/chat" method="POST">
+        <textarea id="texta" name="texta" rows="20" cols="120">
+          {{text}}
+        </textarea>
+        <br/>
+        <input type="submit"/>
+      </form>
+    </div>
+	</div>
+</body>
+</html>

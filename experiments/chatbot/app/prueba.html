@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+	<body>
+
+<p>This example demonstrates how to assign an "onload" event to an iframe element.</p>
+
+
+<form action="" method="POST">
+	<textarea id="texta" name="texta" rows="20" cols="120" onload="fun()">
+		{{text}}
+	</textarea>
+  <br/>
+	<input type="submit"/>
+</form>
+<img onload="fun()"/>
+  <script>
+    function fun() {
+      t = document.getElementById("texta");
+      t.focus();
+      t.value += "--- ";
+    }
+  </script>
+</body>
+</html>
