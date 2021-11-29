@@ -1,0 +1,10 @@
+{ 
+  "symbols": ["X", "O"],
+  "rewards": 
+    {
+	"win": 	20.0,
+	"draw":	10.0,
+	"lose": -20.0,
+	"in_game": 0.0
+    }
+}
