@@ -6,12 +6,14 @@ import time
 
 env = TicTacToeEnv()
 
+"""
 with open('Q_train_1.dat', 'rb') as f:
     Q = pickle.load(f)
+"""
 
 t_ini = time.perf_counter()
-#Q, results = TicTacToeQLAgent.train_X(env, TicTacToeRandomAgent(env))
-Q, results = TicTacToeQLAgent.train_X(env, TicTacToeQLAgent(env, Q))
+Q, results = TicTacToeQLAgent.train_X(env, TicTacToeRandomAgent(env), render=True)
+#Q, results = TicTacToeQLAgent.train_X(env, TicTacToeQLAgent(env, Q))
 t_end = time.perf_counter()
 
 
@@ -29,5 +31,7 @@ print(f"draw: {np.sum(results[-100:]==0)}")
 print(f"err: {np.sum(results[-100:]==-1)}")
 
 # save QV
-with open('Q_train_2.dat', 'wb') as f:
+print("Saving Q...")
+print(f"Number of states: {len(Q)}")
+with open('Q_train_1_random.dat', 'wb') as f:
     pickle.dump(Q, f)

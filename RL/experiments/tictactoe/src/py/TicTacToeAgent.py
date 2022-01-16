@@ -38,7 +38,7 @@ class TicTacToeQLAgent(TicTacToeAgent):
         return self.policy[state]
 
     @staticmethod
-    def train_X(env, opponent, num_episodes=1000000, alpha=0.02, eps_decay=0.9999965,
+    def train_X(env, opponent, num_episodes=100000000, alpha=0.02, eps_decay=0.9999965,
                 gamma=1.0, log=False, render=False):
         EPS_START = 1.0
         EPS_MIN = 0.05
@@ -52,12 +52,16 @@ class TicTacToeQLAgent(TicTacToeAgent):
 
         # Initialize Q(s)
         nA = env.action_space.n
-        Q = defaultdict(lambda: np.zeros(nA))
+        #Q = defaultdict(lambda: np.zeros(nA))
+        Q = defaultdict(lambda: np.random.uniform(low=-1.0,high=1.0,size=nA)/1e-3)
 
         epsilon = EPS_START
 
         # for each episode
         for episode in range(num_episodes):
+            if render and episode%25000 == 0:
+                print(f"episode: {episode}... {len(Q)} states")
+
             # update epsilon with epsilon-decay
             epsilon = max(epsilon * eps_decay, EPS_MIN)
 
