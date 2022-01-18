@@ -1,5 +1,6 @@
 from TicTacToeEnv import TicTacToeEnv
-from TicTacToeAgent import TicTacToeRandomAgent, TicTacToeQLAgent
+from TicTacToeAgent import TicTacToeRandomAgent, TicTacToeQLAgent, \
+                        TicTacToeMinimaxAgent, TicTacToeHumanAgent
 import pickle
 
 with open('Q_train_1_random.dat', 'rb') as f:
@@ -7,10 +8,13 @@ with open('Q_train_1_random.dat', 'rb') as f:
 
 env = TicTacToeEnv()
 #a1 = TicTacToeRandomAgent(env)
-a1 = TicTacToeQLAgent(env, Q)
-a2 = TicTacToeRandomAgent(env)
+#a1 = TicTacToeQLAgent(env, Q)
+a2 = TicTacToeMinimaxAgent(env)
+#a2 = TicTacToeMinimaxAgent(env)
+a1 = TicTacToeHumanAgent(env)
+#a1 = TicTacToeRandomAgent(env)
 
-num_episodes = 2
+num_episodes = 5
 win = [0, 0]
 draw = 0
 err = 0

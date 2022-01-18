@@ -1,8 +1,8 @@
 import numpy as np
 
 class Node():
-    _VAL_WIN_X = 1
-    _VAL_WIN_Y = -1
+    _VAL_WIN_1 = 1
+    _VAL_WIN_2 = -1
     _VAL_DRAW = 0
 
     def __init__(self, parent, state):
@@ -18,18 +18,17 @@ class Node():
     def _get_value(self):
         if self._check_winner(1):
             self._leaf = True
-            return self._VAL_WIN_X
+            return self._VAL_WIN_1
 
         if self._check_winner(2):
             self._leaf = True
-            return self._VAL_WIN_Y
+            return self._VAL_WIN_2
 
         if 0 not in self._state:
             self._leaf = True
             return self._VAL_DRAW
 
         return 0
-
 
     def _check_winner(self, player):
         # horizontal
@@ -89,6 +88,48 @@ class Tree():
                 if not child_node._leaf:   # añadimos el nuevo nodo a la cola
                     q.insert(0, child_node)
 
+    def __str__(self):
+        _str = ""
+        q = []
+        q.append(self._root)
+        while len(q):
+            n = q.pop(0)
+            _str += "\n" + str(n)
+            _str += "\nvalue: " + str(n._value)
+            for _,c in n._children.items():
+                q.append(c)
+        return _str
 
+    def get_best_action(self):
+        # current player
+        s = np.array(self._root._state)
+        count_X = np.where(s==1)[0].size
+        count_O = np.where(s==2)[0].size
+        player = 1 if count_X == count_O else 2
+
+        # minimax functions
+        fun = (max, min)
+        inv_fun = (min, max)
+
+        # get action values
+        actions = { action:self.minimax(child, inv_fun[player-1])
+                for action,child in self._root._children.items() }
+
+        # get best action
+        action = None
+        for a, val in actions.items():
+            if action == None or fun[player-1]((actions[action], val)) == val:
+                action = a
+
+        return action
+
+    def minimax(self, node, fun):
+        if node._leaf:
+            return node._value
+
+        inv_fun = min if fun == max else max
+
+        return fun([self.minimax(child, inv_fun)
+                for child in node._children.values()])
 
 

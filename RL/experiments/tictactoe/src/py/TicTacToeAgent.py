@@ -2,14 +2,14 @@ import numpy as np
 from abc import ABC, abstractmethod
 from TicTacToeEnv import TicTacToeEnv
 from collections import defaultdict
-
+import MinimaxAlgorithm
 
 class TicTacToeAgent(ABC):
     def __init__(self, env):
         self.env = env
 
     @abstractmethod
-    def action(self):
+    def action(self, state=None):
         pass
 
 
@@ -21,6 +21,21 @@ class TicTacToeRandomAgent(TicTacToeAgent):
         valid = [i for i, s in enumerate(state) if s == 0]
         return np.random.choice(valid)
 
+class TicTacToeMinimaxAgent(TicTacToeAgent):
+    def action(self, state):
+        # if first move
+        free = 0
+        for i in state:
+            free += i
+        if not free:
+            # move to a corner
+            return np.random.choice([0, 2, 6, 8])
+        tree = MinimaxAlgorithm.Tree(state)
+        return tree.get_best_action()
+
+class TicTacToeHumanAgent(TicTacToeAgent):
+    def action(self, state=None):
+        return int(input("? "))
 
 class TicTacToeQLAgent(TicTacToeAgent):
     def __init__(self, env, Q):
