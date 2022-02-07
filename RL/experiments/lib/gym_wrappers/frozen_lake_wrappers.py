@@ -1,15 +1,15 @@
 '''frozen_lake_wrappers module.'''
 
-from sys import exit # pylint: disable=W0622
+from sys import exit  # pylint: disable=W0622
 import gym
 import pygame
 import os
 
 package_directory = os.path.dirname(os.path.abspath(__file__))
 
-class FrozenLakeWinWrapper(gym.Wrapper):
 
-    ''' FrozenLakeWinWrapper class.
+class FrozenLakeWinWrapper(gym.Wrapper):
+    """ FrozenLakeWinWrapper class.
 
         ver: 0.5
         - added goal property.
@@ -25,7 +25,7 @@ class FrozenLakeWinWrapper(gym.Wrapper):
         ver: 0.2
         - added hole and wall rewards
         - added is_closed property
-    '''
+    """
 
     # pylint: disable=too-many-instance-attributes
 
@@ -36,11 +36,10 @@ class FrozenLakeWinWrapper(gym.Wrapper):
 
     _AGENT_IMG = os.path.join(package_directory, 'art', 'robot.png')
     _SND_MUSIC = os.path.join(package_directory, 'sound',
-            'zapsplat_music_arcade_012.ogg')
+                              'zapsplat_music_arcade_012.ogg')
     _SND_HIT = os.path.join(package_directory, 'sound', 'zapsplat_sound_hit_02.wav')
     _SND_FALL = os.path.join(package_directory, 'sound', 'zapsplat_sound_lose_006.wav')
     _SND_GOAL = os.path.join(package_directory, 'sound', 'zapsplat_sound_power_up_retro_001.wav')
-
 
     _DEF_BACK_COL = (255, 255, 255)
     _DEF_GOAL_COL = (255, 255, 0)
@@ -72,7 +71,7 @@ class FrozenLakeWinWrapper(gym.Wrapper):
         # init pygame window
         pygame.init()
         if render:
-            self._alive = True # window alive
+            self._alive = True  # window alive
             self._scr = pygame.display.set_mode((self._w, self._h), pygame.DOUBLEBUF, 32)
             pygame.display.set_caption(title)
 
@@ -94,8 +93,8 @@ class FrozenLakeWinWrapper(gym.Wrapper):
             self._alive = False
 
     def reset(self, **kwargs):
-        '''calls environment's reset() method.
-        '''
+        """calls environment's reset() method.
+        """
         self._state = self._env.reset(**kwargs)
         self._prev_state = self._state
         self._done = False
@@ -103,8 +102,8 @@ class FrozenLakeWinWrapper(gym.Wrapper):
         return self._state
 
     def step(self, action):
-        '''calls environment's step(action) method.
-        '''
+        """calls environment's step(action) method.
+        """
         self._prev_state = self._state
         self._state, reward, self._done, info = self._env.step(action)
 
@@ -130,13 +129,13 @@ class FrozenLakeWinWrapper(gym.Wrapper):
         return self._state, reward, self._done, info
 
     def set_im_agent(self, im_agent_file):
-        '''sets the image agent.
-        '''
+        """sets the image agent.
+        """
         self._im_agent = pygame.image.load(im_agent_file).convert_alpha()
 
     def set_im_goal(self, im_goal_file):
-        '''sets the goal image.
-        '''
+        """sets the goal image.
+        """
         self._im_goal = pygame.image.load(im_goal_file).convert_alpha()
 
     @property
@@ -208,15 +207,15 @@ class FrozenLakeWinWrapper(gym.Wrapper):
         self._goal_col = color
 
     def draw_agent(self):
-        '''draws the agent's image in the current cell.
-        '''
+        """draws the agent's image in the current cell.
+        """
         x_pos = (self._state % self.ncol) * self._CELL_W
         y_pos = (self._state // self.ncol) * self._CELL_H
         self._scr.blit(self._im_agent, (x_pos, y_pos))
 
     def draw_grid(self):
-        '''draws the board grid.
-        '''
+        """draws the board grid.
+        """
         line_width = 3
 
         # borde
@@ -244,20 +243,20 @@ class FrozenLakeWinWrapper(gym.Wrapper):
                 line_width)
 
     def draw_special_cells(self):
-        '''draws start, hole and goal cells
-        '''
+        """draws start, hole and goal cells
+        """
         for r in range(self._env.desc.shape[0]):
-            for c,val in enumerate(self._env.desc[r]):
+            for c, val in enumerate(self._env.desc[r]):
                 if val == b'S' or val == b'H' or val == b'G':
                     x_pos = c * self._CELL_W
                     y_pos = r * self._CELL_H
 
-                    color = self._home_col if val==b'S' else self._hole_col if val==b'H' else self._goal_col
+                    color = self._home_col if val == b'S' else self._hole_col if val == b'H' else self._goal_col
                     pygame.draw.rect(
-                            self._scr,
-                            color,
-                            pygame.Rect(x_pos, y_pos, self._CELL_W, self._CELL_H)
-                            )
+                        self._scr,
+                        color,
+                        pygame.Rect(x_pos, y_pos, self._CELL_W, self._CELL_H)
+                    )
 
                     if self._im_goal and val == b'G':
                         self._scr.blit(self._im_goal, (x_pos, y_pos))
@@ -273,16 +272,16 @@ class FrozenLakeWinWrapper(gym.Wrapper):
         pygame.mixer.music.play(-1)
 
     def close(self):
-        '''close window and exit.'''
+        """close window and exit."""
         pygame.display.quit()
         pygame.quit()
         self._alive = False
         self._done = True
-        #exit()
+        # exit()
 
     def run_once(self):
-        '''executes one iteration of the main display.
-        '''
+        """executes one iteration of the main display.
+        """
         if self._alive:
             self._scr.fill(self._back_col)
             self.draw_special_cells()
@@ -294,5 +293,3 @@ class FrozenLakeWinWrapper(gym.Wrapper):
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.close()
-
-
