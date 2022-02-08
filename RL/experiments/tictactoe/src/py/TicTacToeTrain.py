@@ -344,7 +344,7 @@ def main():
     t_ini = time.perf_counter()
 
     #Q, stats_X, stats_O = train(env, opo, num_episodes=100000, gamma=.25)
-    Q, stats_X, stats_O = train2(env, opo, num_episodes=200000, gamma=.25)
+    Q, stats_X, stats_O = train2(env, opo, num_episodes=500000, gamma=.95)
 
     t_end = time.perf_counter()
 
