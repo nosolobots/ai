@@ -107,6 +107,132 @@ def train(env, opponent, num_episodes=1000, alpha=0.02, eps_decay=0.9999965,
     return dict(Q), total_stats_X, total_stats_O
 
 
+def train2(env, opponent, num_episodes=1000, alpha=0.02, eps_decay=0.9999965,
+            gamma=1.0, log=False, render=False, Q_ini=None):
+    EPS_START = 1.0
+    EPS_MIN = 0.05
+
+    # stats
+    results = np.zeros(num_episodes, dtype=int)
+
+    # ---------------------------------------------------------------------
+    # QL Algorithm
+    # ---------------------------------------------------------------------
+
+    # Initialize Q(s)
+    nA = env.action_space.n
+    #Q = defaultdict(lambda: np.zeros(nA))
+    if Q_ini:
+        Q = Q_ini
+    else:
+        #Q = defaultdict(lambda: np.zeros(nA))
+        Q = defaultdict(lambda: np.random.uniform(low=-1.0,high=1.0,size=nA)/1e6)
+
+    epsilon = EPS_START
+
+    players = ["QL", opponent]
+
+    total_stats_X = []
+    total_stats_O = []
+
+    # for each episode
+    for episode in range(num_episodes):
+        # update epsilon with epsilon-decay
+        epsilon = max(epsilon * eps_decay, EPS_MIN)
+
+        # collect episode steps
+        episode_steps = collect_episode(env, players, Q, epsilon)
+
+        # update Q from final step to the begining of the episode
+        episode_steps.reverse()
+
+        # last action
+        state, action, _, reward = episode_steps[0]
+        Q[state][action] = (1 - alpha) * Q[state][action] + alpha * reward
+
+        # rest of actions
+        for state, action, next_state, reward in episode_steps[1:]:
+            Q[state][action] = (1 - alpha) * Q[state][action] + \
+                    alpha * (reward + gamma * np.max(Q[next_state]))
+
+
+        # episode finsihed (test agent performance)
+        if episode % 25 == 0:
+            stats_X, stats_O = test_agent(dict(Q))
+            total_stats_X.append(stats_X)
+            total_stats_O.append(stats_O)
+            print(f"{episode//25:05d} - X: {stats_X} - O: {stats_O}")
+
+        # rotate players
+        players.reverse()
+
+    return dict(Q), total_stats_X, total_stats_O
+
+
+def collect_episode(env, players, Q, epsilon):
+    nA = env.action_space.n
+
+    # start episode
+    state = env.reset()
+
+    player_id = 1
+
+    episode_steps = [] # state, action, next_state, reward
+
+    # process episode
+    while True:
+        # select player
+        player = players[player_id - 1]
+
+        if isinstance(player, TicTacToeAgent):
+            next_state, reward, done, info = env.step(player.action(state))
+            if done:
+                if info["end"] == "error":
+                    reward = 0
+                elif info["end"] == "win":
+                    reward = (-1)*reward
+
+                # update reward of player's last action (final reward)
+                episode_steps[-1][3] = reward
+
+        else:
+            # learn from errors
+            if state in Q:
+                probs = get_probs(Q[state], epsilon, nA)
+                action = np.random.choice(np.arange(nA), p=probs)
+            else:
+                action = np.random.randint(nA)
+            """
+            # not errors allowed
+            valid_actions = [i for i,s in enumerate(state) if s == 0]
+            if state in Q:
+                probs = get_probs([Q[state][v] for v in valid_actions],
+                            epsilon, len(valid_actions))
+                action = np.random.choice(valid_actions, p=probs)
+            else:
+                action = np.random.choice(valid_actions)
+            """
+            # execute action
+            next_state, reward, done, info = env.step(action)
+
+            # save action result
+            episode_steps.append([state, action, next_state, reward])
+
+        """
+        if done and info["end"]=="error":
+            print("error --->",state,action,next_state)
+        """
+
+        # update state
+        state = next_state
+
+        if done:
+            break
+
+        # next player
+        player_id = player_id % 2 + 1
+
+    return episode_steps
 
 def get_probs(Q_s, epsilon, nA):
     # iniciamos todas las probabilidades a epsilon/nA
@@ -217,7 +343,8 @@ def main():
 
     t_ini = time.perf_counter()
 
-    Q, stats_X, stats_O = train(env, opo, num_episodes=50000, gamma=.25)
+    #Q, stats_X, stats_O = train(env, opo, num_episodes=100000, gamma=.25)
+    Q, stats_X, stats_O = train2(env, opo, num_episodes=200000, gamma=.25)
 
     t_end = time.perf_counter()
 
