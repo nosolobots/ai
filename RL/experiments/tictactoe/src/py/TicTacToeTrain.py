@@ -107,7 +107,7 @@ def train(env, opponent, num_episodes=1000, alpha=0.02, eps_decay=0.9999965,
     return dict(Q), total_stats_X, total_stats_O
 
 
-def train2(env, opponent, num_episodes=1000, alpha=0.02, eps_decay=0.9999965,
+def train2(env, opponent, num_episodes=1000, alpha=0.25, eps_decay=0.9999965,
             gamma=1.0, log=False, render=False, Q_ini=None):
     EPS_START = 1.0
     EPS_MIN = 0.05
@@ -147,14 +147,14 @@ def train2(env, opponent, num_episodes=1000, alpha=0.02, eps_decay=0.9999965,
         episode_steps.reverse()
 
         # last action
-        state, action, _, reward = episode_steps[0]
+        state, action, reward = episode_steps[0]
         Q[state][action] = (1 - alpha) * Q[state][action] + alpha * reward
 
         # rest of actions
-        for state, action, next_state, reward in episode_steps[1:]:
+        for i,(state, action, reward) in enumerate(episode_steps[1:]):
+            next_state = episode_steps[i-1][0] # previous state in the list
             Q[state][action] = (1 - alpha) * Q[state][action] + \
                     alpha * (reward + gamma * np.max(Q[next_state]))
-
 
         # episode finsihed (test agent performance)
         if episode % 25 == 0:
@@ -177,7 +177,7 @@ def collect_episode(env, players, Q, epsilon):
 
     player_id = 1
 
-    episode_steps = [] # state, action, next_state, reward
+    episode_steps = [] # [state, action, reward]
 
     # process episode
     while True:
@@ -193,7 +193,7 @@ def collect_episode(env, players, Q, epsilon):
                     reward = (-1)*reward
 
                 # update reward of player's last action (final reward)
-                episode_steps[-1][3] = reward
+                episode_steps[-1][2] = reward
 
         else:
             # learn from errors
@@ -215,8 +215,12 @@ def collect_episode(env, players, Q, epsilon):
             # execute action
             next_state, reward, done, info = env.step(action)
 
+            # penalize errors
+            if done and info["end"]=="error":
+                reward *= 1000.0
+
             # save action result
-            episode_steps.append([state, action, next_state, reward])
+            episode_steps.append([state, action, reward])
 
         """
         if done and info["end"]=="error":
@@ -344,7 +348,7 @@ def main():
     t_ini = time.perf_counter()
 
     #Q, stats_X, stats_O = train(env, opo, num_episodes=100000, gamma=.25)
-    Q, stats_X, stats_O = train2(env, opo, num_episodes=500000, gamma=.95)
+    Q, stats_X, stats_O = train2(env, opo, num_episodes=1000000, gamma=.75)
 
     t_end = time.perf_counter()
 

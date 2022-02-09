@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 """Juego de Tic-Tac-Toe para falken."""
 
+import os
 import pygame
 from TicTacToeEnv import TicTacToeEnv
-from TicTacToeAgent import TicTacToeRandomAgent, TicTacToeMinimaxAgent
-
+from TicTacToeAgent import TicTacToeRandomAgent, TicTacToeMinimaxAgent, \
+            TicTacToeQLAgent
 
 class TTT_Game():
     _GRID_LINE_WIDTH = 20
@@ -16,6 +17,8 @@ class TTT_Game():
     _PLAYER_RANDOM = 2
     _PLAYER_MINIMAX = 3
     _PLAYER_QL = 4
+
+    _Q_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)), "Q.dat")
 
     def __init__(self, console, player_types, sleep=250):
         self._console = console
@@ -55,6 +58,9 @@ class TTT_Game():
                 players[player_id + 1] = TicTacToeRandomAgent(self._gym_env)
             elif player_type == TTT_Game._PLAYER_MINIMAX:
                 players[player_id + 1] = TicTacToeMinimaxAgent(self._gym_env)
+            elif player_type == TTT_Game._PLAYER_QL:
+                players[player_id + 1] = TicTacToeQLAgent(self._gym_env,
+                        Q_file= TTT_Game._Q_FILE)
         return players
 
     def spin_once(self):

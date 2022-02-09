@@ -20,7 +20,7 @@ class TicTacToeEnv(gym.Env):
     def _initialize(self):
         """Inicializa el estado del juego."""
         self._player = 1       # jugador actual
-        self._states = 9*[0]   # estados
+        self._state = 9*[0]   # estados
 
     def _load_config(self):
         """Carga el archivo de configuración.
@@ -49,32 +49,34 @@ class TicTacToeEnv(gym.Env):
 
     def reset(self):
         self._initialize()
-        return tuple(self._states)
+        return tuple(self._state)
 
     def step(self, action):
-        if self._states[action] != 0:
-            return tuple(self._states), self._rewards["lose"], True, {"end": "error", "err": "invalid move"}
+        if self._state[action] != 0:
+            return tuple(self._state), self._rewards["lose"], True, \
+                {"end":"error", "player": self._player, "err": "invalid move"}
 
         # actualiza posición en el tablero
-        self._states[action] = self._player
+        self._state[action] = self._player
 
         # check si jugador actual gana
         if self._check_winner():
-            return tuple(self._states), self._rewards["win"], True, {"end":
+            return tuple(self._state), self._rewards["win"], True, {"end":
                     "win", "winner": self._player}
 
         # check si empate
         if self._check_draw():
-            return tuple(self._states), self._rewards["draw"], True, {"end": "draw"}
+            return tuple(self._state), self._rewards["draw"], True, {"end": "draw"}
 
         # siguiente jugador
         self._player = (self._player % 2) + 1
 
-        return tuple(self._states), self._rewards["in_game"], False, {"next player":str(self._player)}
+        return tuple(self._state), self._rewards["in_game"], False, \
+                    {"next player":str(self._player)}
 
     def render(self):
         symbol = [' ', self._symbols[0], self._symbols[1]]
-        data = [symbol[i] for i in self._states]
+        data = [symbol[i] for i in self._state]
         print(f' {data[0]} | {data[1]} | {data[2]}')
         print('――― ――― ―――')
         print(f' {data[3]} | {data[4]} | {data[5]}')
@@ -83,7 +85,7 @@ class TicTacToeEnv(gym.Env):
 
     def _check_draw(self):
         """Determina si hay empate en el estado actual."""
-        for st in self._states:
+        for st in self._state:
             if st == 0:
                 return False
         return True
@@ -92,20 +94,20 @@ class TicTacToeEnv(gym.Env):
         """Determina si hay un tres en raya para algún jugador."""
         # horizontal
         for i in range(0, 9, 3):
-            if self._states[i] == self._states[i+1] == self._states[i+2] != 0:
+            if self._state[i] == self._state[i+1] == self._state[i+2] != 0:
                 return True
 
         # vertical
         for i in range(3):
-            if self._states[i] == self._states[i+3] == self._states[i+6] != 0:
+            if self._state[i] == self._state[i+3] == self._state[i+6] != 0:
                 return True
 
         # diagonal ppal
-        if self._states[0] == self._states[4] == self._states[8] != 0:
+        if self._state[0] == self._state[4] == self._state[8] != 0:
             return True
 
         # diagonal sec
-        if self._states[2] == self._states[4] == self._states[6] != 0:
+        if self._state[2] == self._state[4] == self._state[6] != 0:
             return True
 
         return False
